@@ -1,0 +1,7 @@
+let options = []
+options.push(...results.items.map(item => {
+  ctr++;
+  return { _id: ctr.toLocaleString(), value: item, label: item };
+}));
+
+$w("#repeater5").data = options;
