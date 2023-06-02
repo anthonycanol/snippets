@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Tour Site</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+    <style>
+    *, *:after, *:before { -webkit-box-sizing: border-box; box-sizing: border-box; -webkit-tap-highlight-color: rgba(0,0,0,0); }
+    body { margin: 0; padding: 0; }
+    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+    </style>
+    <style>
+      body{ font: 400 15px/22px 'Source Sans Pro', 'Helvetica Neue', sans-serif;
+margin: 0;
+padding: 0;
+-webkit-font-smoothing: antialiased; }
+      h4, h5, div, p { padding:0; margin:0; font-family: Helvetica, 'Helvetica Neue', Arial, Sans-serif }
+      h4 { padding: 5px; text-transform: uppercase; }
+      a { text-decoration: none; }
+      .global-static-map__container__grouptooltip__content { z-index: 2; }
+      .global-static-map__container__grouptooltip{
+        width: 100%;
+        min-width: 180px;
+        height: 58px;
+        background-color: white;
+        padding: 10px;
+        -webkit-box-pack: center;
+        -ms-flex-pack: center;
+        justify-content: center;
+        -webkit-box-align: center;
+        -ms-flex-align: center;
+        align-items: center;
+        cursor: pointer;
+        text-align: center;
+        -webkit-transition: opacity 250ms,-webkit-transform 250ms;
+        transition: opacity 250ms,-webkit-transform 250ms;
+        transition: transform 250ms,opacity 250ms;
+        transition: transform 250ms,opacity 250ms,-webkit-transform 250ms;
+      }
+      .global-static-map__container__grouptooltip.scaledGroupToolTip{-webkit-transform:scale(1.2,1.2) translateY(-5px);transform:scale(1.2,1.2) translateY(-5px);-webkit-transition:-webkit-transform 250ms;transition:-webkit-transform 250ms;transition:transform 250ms;transition:transform 250ms, -webkit-transform 250ms}
+      .global-static-map__container__grouptooltip>div {
+        position: absolute;
+        position: relative;
+        -webkit-transform: translate(-50%,-50%) translateZ(0);
+        transform: translate(-50%,-50%) translateZ(0);
+        left: 50%;
+        top: 50%;
+      }
+      .global-static-map__container__grouptooltip>div>h5 {
+        font-size: 18px;
+        line-height: 24px;
+        letter-spacing: 1px;
+      }
+      .global-static-map__container__grouptooltip>div>p {
+        color: #9ac133;
+        text-transform: uppercase;
+        font-size: .65rem;
+        letter-spacing: .2em;
+      }
+      .global-static-map__container__dotmarker {
+        background-color: #9ac133;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        opacity: 1;
+        border: 2px solid white;
+        -webkit-transition: opacity 250ms;
+        transition: opacity 250ms;
+        z-index: 0;
+        cursor: pointer;
+        position: absolute;
+        pointer-events: none;
+      }
+      .global-static-map__container__dotmarker .text {
+        display: none;
+      }
+      .global-static-map__container__marker{
+        background-color: white;
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        opacity: 1;
+        border: 4px solid #9ac133;
+        -webkit-transition: opacity 250ms,-webkit-transform 250ms;
+        transition: opacity 250ms,-webkit-transform 250ms;
+        transition: transform 250ms,opacity 250ms;
+        transition: transform 250ms,opacity 250ms,-webkit-transform 250ms;
+        z-index: 1;
+        cursor: pointer;
+        pointer-events: all;
+        position: relative;
+      }
+      .global-static-map__container__marker:after, .global-static-map__container__marker:before {
+        -webkit-transform: translate(0,27px) translateZ(0);
+        transform: translate(0,27px) translateZ(0);
+        border: solid transparent;
+        content: " ";
+        height: 0;
+        width: 0;
+        position: absolute;
+        pointer-events: none;
+      }
+      .global-static-map__container__marker:after {
+        border-top-color: #9ac133;
+        border-width: 13px 7px 0 7px;
+        left: 50%;
+        -webkit-transform: translate(-7px,27px) translateZ(0);
+        transform: translate(-7px,27px) translateZ(0);
+      }
+      .global-static-map__container__marker .text {
+        font-size: 12px;
+        color: #676767;
+        position: relative;
+        float: left;
+        top: 50%;
+        left: 50%;
+        width: 100%;
+        height: 100%;
+        display: -webkit-box;
+        display: -ms-flexbox;
+        display: flex;
+        -webkit-box-pack: center;
+        -ms-flex-pack: center;
+        justify-content: center;
+        text-align: center;
+        -webkit-box-align: center;
+        -ms-flex-align: center;
+        align-items: center;
+        -webkit-transform: translate(-50%,-50%) translateZ(0);
+        transform: translate(-50%,-50%) translateZ(0);
+      }
+      .global-static-map__container__shadow {
+        pointer-events: none;
+        position: absolute;
+        display: block;
+        width: 40px;
+        height: 10px;
+        -webkit-transform: translate(-50%,10px) translateZ(0);
+        transform: translate(-50%,10px) translateZ(0);
+        left: 50%;
+        background-image: radial-gradient(ellipse at center,rgba(0,0,0,0.15) 0,rgba(0,0,0,0) 80%);
+        z-index: -1;
+        -webkit-transition: width 250ms,height 250ms;
+        transition: width 250ms,height 250ms;
+        display: none;
+      }
+      .hidegroupstooltips {
+        opacity: 0;
+        pointer-events: none;
+        -webkit-transition: opacity 250ms;
+        transition: opacity 250ms;
+      }
+      .global-static-map__container { z-index: 1; }
+      .global-static-map__container .selectedShad {
+        width: 300px;
+        height: 20px;
+        -webkit-transition: width 150ms,height 150ms;
+        transition: width 150ms,height 150ms;
+      }
+      .global-static-map__container__feedbox {
+        position: absolute;
+        display: block;
+        width: 300px;
+        height: auto;
+        left: 50%;
+        top: 50%;
+        will-change: transform;
+        -webkit-transform: translate(-50%,-102%) translateZ(0);
+        transform: translate(-50%,-102%) translateZ(0);
+        opacity: 1;
+        z-index: 99;
+        -webkit-transition: opacity 250ms,-webkit-transform 250ms;
+        transition: opacity 250ms,-webkit-transform 250ms;
+        transition: opacity 250ms,transform 250ms;
+        transition: opacity 250ms,transform 250ms,-webkit-transform 250ms;
+      }
+      .global-static-map__container__feedbox__closeBtn {
+        display: block;
+        position: absolute;
+        font: normal 24px Arial,sans-serif;
+        display: inline-block;
+        right: 0;
+        margin-top: -30px;
+        cursor: pointer;
+        color: white;
+      }
+      .global-static-map__container__feedbox__closeBtn:before {
+        content: "\2715";
+      }
+      .global-static-map__container__feedbox__background {
+        position: relative;
+        width: 100%;
+        background-color: #fff;
+        border: 0;
+        padding: 10px;
+      }
+      .global-static-map__container__feedbox__background__container {
+        display: -webkit-box;
+        display: -ms-flexbox;
+        display: flex;
+        -webkit-box-pack: justify;
+        -ms-flex-pack: justify;
+        justify-content: space-between;
+        align-items: center;
+        width: 90%;
+        margin: 0 auto;
+      }
+      .global-static-map__container__feedbox__background__container p, 
+      .global-static-map__container__feedbox__background__container .read-more-p, 
+      .global-static-map__container__feedbox__background__container .wufoo .info div, 
+      .wufoo .info .global-static-map__container__feedbox__background__container div {
+        font-size: 1.2em;
+        letter-spacing: .2em;
+        text-transform: uppercase;
+        color: #111;
+      }
+      .global-static-map__container__feedbox__bottomtextarea {
+        height: 61px;
+        width: 100%;
+        background-color: white;
+        display: -webkit-box;
+        display: -ms-flexbox;
+        display: flex;
+        -webkit-box-pack: center;
+        -ms-flex-pack: center;
+        justify-content: center;
+        -webkit-box-align: center;
+        -ms-flex-align: center;
+        align-items: center;
+        cursor: pointer;
+        padding: 16px;
+      }
+.global-static-map__container__feedbox__bottomtextarea a {
+    font-family: reader-regular,sans-serif;
+    font-size: 1rem !important;
+    color: #656565;
+    line-height: 1.42857em;
+    color: #9ac133;
+}
+.global-static-map__container__feedbox__bottomtextarea span {
+    display: block;
+    height: 20px;
+    width: 20px;
+    margin-left: 17px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg class='st0' height='20px' width='20px' fill='%239ac133' viewBox='0 0 90 90' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline class='st2' points='61.2%2C74.3 61.2%2C18 89.1%2C46.2 '/%3E%3Crect y='41.5' class='st2' width='61.2' height='9.2'/%3E%3C/svg%3E");
+    fill: #9ac133;
+}
+      .global-static-map__container .hidefeedbox {
+        opacity: 0;
+        -webkit-transform: translate(-50%,-140%) translateZ(0);
+        transform: translate(-50%,-140%) translateZ(0);
+        pointer-events: none;
+        -webkit-transition: opacity 250ms,-webkit-transform 250ms;
+        transition: opacity 250ms,-webkit-transform 250ms;
+        transition: opacity 250ms,transform 250ms;
+        transition: opacity 250ms,transform 250ms,-webkit-transform 250ms;
+      }
+      .global-static-map__container .hide {
+        opacity: 0;
+        pointer-events: none;
+      }
+      @media (min-width: 768px){
+        .global-static-map__container__grouptooltip:after {
+          content: "";
+          position: absolute;
+          left: auto;
+          top: calc(100% - 1px);
+          width: 0;
+          height: 0;
+          margin-left: -5px;
+          border-left: 5px solid transparent;
+          border-right: 5px solid transparent;
+          border-top: 10px solid white;
+          clear: both;
+        }
+        .global-static-map__container__feedbox {
+          -webkit-transform: translate(-50%,-102%) translateZ(0);
+          transform: translate(-50%,-102%) translateZ(0);
+        }
+        .global-static-map__container__feedbox__bottomtextarea:after {
+    content: "";
+    position: absolute;
+    left: auto;
+    top: 100%;
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 20px solid white;
+    clear: both;
+}
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <div class="mapboxgl-marker">
+    </div>
+    
+    <!-- script for map function -->
+    <script>
+    
+    const defaultCenter = [52, 0]
+    const defaultZoom = 1.5
+        
+	// TO MAKE THE MAP APPEAR YOU MUST
+	// ADD YOUR ACCESS TOKEN FROM
+	// https://account.mapbox.com
+	mapboxgl.accessToken = 'pk.eyJ1IjoibWFuc29uaTUiLCJhIjoiY2xmdHozc3dnMDVyNzNzbnJtdHl1OTA1ZiJ9.QYbD3fRwSoWrS8pUU2nx4A';
+  const map = new mapboxgl.Map({
+    container: 'map',
+    // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
+    style: 'mapbox://styles/mansoni5/clhu9mend023j01pn9zd4cob6',
+    center: defaultCenter,
+    zoom: defaultZoom,
+    scrollZoom: false,
+    boxZoom: false,
+    doubleClickZoom: false
+  });
+
+  map.touchZoomRotate.disable();
+
+const tourData = [
+  {
+    "grouptooltip": {
+      "coordinates": [
+        17.841796875,
+        16.8886597873816
+      ],
+      "title": "Africa",
+      "subehead": "tours"
+    },
+    "geojson": {
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "properties": {
+            "location": "Egypt",
+            "numberoftours": 1,
+            "linkcta": "See Egypt Tour",
+            "link": "/almost-there",
+            "isInvisible": false
+          },
+          "geometry": {
+            "type": "point",
+            "coordinates": [
+              29.35546875,
+              29.878755346038
+            ]
+          }
+        },
+        {
+          "type": "Feature",
+          "properties": {
+            "location": "Botswana",
+            "numberoftours": 1,
+            "linkcta": "See Botswana Tour",
+            "link": "/almost-there",
+            "isInvisible": false
+          },
+          "geometry": {
+            "type": "point",
+            "coordinates": [
+              24.3162647690614,
+              -22.2129427788611
+            ]
+          }
+        },
+        {
+          "type": "Feature",
+          "properties": {
+            "location": "Madagascar",
+            "numberoftours": 1,
+            "linkcta": "See Madagascar Tour",
+            "link": "/almost-there",
+            "isInvisible": false
+          },
+          "geometry": {
+            "type": "point",
+            "coordinates": [
+              46.7059842741429,
+              -19.3735339420708
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "grouptooltip": {
+      "coordinates": [
+        93.515625,
+        30.1451271833761
+      ],
+      "title": "Asia",
+      "subehead": "tours"
+    },
+    "geojson": {
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "properties": {
+            "location": "Bhutan",
+            "numberoftours": 1,
+            "linkcta": "See Bhutan Tour",
+            "link": "/almost-there",
+            "isInvisible": false
+          },
+          "geometry": {
+            "type": "point",
+            "coordinates": [
+              90.4294341148677,
+              27.415414814619
+            ]
+          }
+        },
+        {
+          "type": "Feature",
+          "properties": {
+            "location": "India",
+            "numberoftours": 1,
+            "linkcta": "See India Tour",
+            "link": "/almost-there",
+            "isInvisible": false
+          },
+          "geometry": {
+            "type": "point",
+            "coordinates": [
+              78.662109375,
+              26.1159859253335
+            ]
+          }
+        },
+        {
+          "type": "Feature",
+          "properties": {
+            "location": "Jordan",
+            "numberoftours": 1,
+            "linkcta": "See Jordan Tour",
+            "link": "/almost-there",
+            "isInvisible": false
+          },
+          "geometry": {
+            "type": "point",
+            "coordinates": [
+              36.4358628369717,
+              31.0101920713363
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "grouptooltip": {
+      "coordinates": [
+        162.59765625,
+        -35.6751474360847
+      ],
+      "title": "Australia & New Zealand",
+      "subehead": "tours"
+    },
+    "geojson": {
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "properties": {
+            "location": "Australia",
+            "numberoftours": 1,
+            "linkcta": "See Australia Tour",
+            "link": "/australia-private-tour",
+            "isInvisible": false
+          },
+          "geometry": {
+            "type": "point",
+            "coordinates": [
+              134.5166015625,
+              -25.3638822727402
+            ]
+          }
+        },
+        {
+          "type": "Feature",
+          "properties": {
+            "location": "New Zealand",
+            "numberoftours": 1,
+            "linkcta": "See New Zealand Tour",
+            "link": "/almost-there",
+            "isInvisible": false
+          },
+          "geometry": {
+            "type": "point",
+            "coordinates": [
+              171.779900195937,
+              -41.8388752215127
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "grouptooltip": {
+      "coordinates": [
+        26.89453125,
+        50.6250730634143
+      ],
+      "title": "Europe",
+      "subehead": "tours"
+    },
+    "geojson": {
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "properties": {
+            "location": "Italy",
+            "numberoftours": 3,
+            "linkcta": "See All Italy Tours",
+            "link": "/italy-private-tour",
+            "isInvisible": false
+          },
+          "geometry": {
+            "type": "point",
+            "coordinates": [
+              12.6463610364431,
+              42.5041539170675
+            ]
+          }
+        },
+        {
+          "type": "Feature",
+          "properties": {
+            "location": "France",
+            "numberoftours": 1,
+            "linkcta": "See France Tour",
+            "link": "/private-france-tour",
+            "isInvisible": false
+          },
+          "geometry": {
+            "type": "point",
+            "coordinates": [
+              2.61878695312962,
+              47.8249046208979
+            ]
+          }
+        }
+      ]
+    }
+  },
+  {
+    "grouptooltip": {
+      "coordinates": [
+        -97.294922,
+        40.380029
+      ],
+      "title": "United States",
+      "subehead": "tours"
+    },
+    "geojson": {
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "properties": {
+            "location": "California",
+            "numberoftours": 1,
+            "linkcta": "See California Tour",
+            "link": "/almost-there",
+            "isInvisible": false
+          },
+          "geometry": {
+            "type": "point",
+            "coordinates": [
+              -119.699375153073,
+              37.0743595873945
+            ]
+          }
+        }
+      ]
+    }
+  }
+]
+
+
+// console.log(tourData)
+
+tourData.forEach(data=>{
+  // console.log(data)
+    // create a HTML element for each feature for group
+    const elgr = document.createElement('div');
+    elgr.className = 'global-static-map__container__grouptooltip__content';
+    var content = `<div class="global-static-map__container__grouptooltip"><div><h5>${data.grouptooltip.title}</h5><p>${data.grouptooltip.subehead}</p></div></div>`;
+    elgr.innerHTML = content;
+
+    // make a marker for each feature and add to the map for group
+    const newMarker = new mapboxgl.Marker(elgr).setLngLat(data.grouptooltip.coordinates).addTo(map);
+
+    elgr.addEventListener('click', (e) => {
+      /* Fly to the point with zoom */
+      flyToTour(data.grouptooltip.coordinates,3);
+      hideGroupToolTip()
+      displayMarkerWithNumber()
+      displayMarkerShadow()
+    });
+
+    // create a HTML element for each feature for individual
+    for (const feature of data.geojson.features) {
+
+      let torus = feature.properties.numberoftours>1 ? 'Tours':'Tour';
+      const el = document.createElement('div');
+      el.className = 'global-static-map__container';
+      var content = `<div class="global-static-map__container__dotmarker"><div class="text number-of-tour">${feature.properties.numberoftours}</div></div>`
+          content += `<div class="global-static-map__container__shadow"></div>`
+          content += `<div class="global-static-map__container__feedbox hidefeedbox">
+                      <div class="global-static-map__container__feedbox__closeBtn"></div>
+                      <div class="global-static-map__container__feedbox__background">
+                        <div class="global-static-map__container__feedbox__background__container">
+                          <h4 class="global-static-map__container__feedbox__background__container__country">${feature.properties.location}</h4>
+                          <p class="global-static-map__container__feedbox__background__container__numbertours">${feature.properties.numberoftours} ${torus}</p>
+                        </div>
+                      </div>
+                      <div class="global-static-map__container__feedbox__bottomtextarea"><a href="${feature.properties.link}" class="linkto">${feature.properties.linkcta}</a><span></span></div>
+                      </div>`
+      el.innerHTML = content;
+
+      // make a marker for each feature and add to the map for group
+      const lilMarker = new mapboxgl.Marker(el).setLngLat(feature.geometry.coordinates).addTo(map);
+      el.addEventListener('click', (e) => {
+        
+        let target = e.target
+        let clsNem = e.target.className.split(" ");
+        console.log(e)
+        if(target){  
+          if(clsNem.includes('linkto')){
+            window.parent.postMessage(e.target.href, "https://www.redwoodcafetours.com/")
+          }
+          if(clsNem.includes('global-static-map__container__feedbox__closeBtn')){
+            hideInfoBox()
+            displayEveryMarkerWithNumber()
+            displayMarkerShadow()
+          }
+
+          if(clsNem.includes('number-of-tour')){
+            hideInfoBox()
+            displayEveryMarkerWithNumber()
+            displayMarkerShadow()
+          }
+
+          flyToTour(feature.geometry.coordinates,3);
+          let parentElement = e.target.parentNode
+          let siblingElement =  parentElement.nextSibling
+          let siblingElement2 =  parentElement.nextSibling.nextSibling
+          
+          parentElement.classList.add("hide")
+          siblingElement.classList.add("selectedShad")
+          siblingElement2.classList.remove("hidefeedbox")
+        }else{
+          console.log('here')
+        }
+      })
+
+    }
+
+})
+
+function flyToTour(coor=false,zom=false) {
+  map.flyTo({
+    center: coor,
+    zoom: zom,
+    duration: 1200
+  });
+}
+
+function hideGroupToolTip(){
+  const group = document.querySelectorAll('.global-static-map__container__grouptooltip');
+
+  for (const grp of group) {
+    grp.classList.add('hidegroupstooltips');
+  }
+}
+
+function showGroupToolTip(){
+  const group = document.querySelectorAll('.global-static-map__container__grouptooltip');
+
+  for (const grp of group) {
+    grp.classList.remove('hidegroupstooltips');
+  }
+}
+
+function displayMarkerWithNumber(){
+  const dotmarker = document.querySelectorAll(".global-static-map__container__dotmarker")
+  dotmarker.forEach(item => { 
+    item.classList.add("global-static-map__container__marker")
+    item.classList.remove("global-static-map__container__dotmarker")
+  })
+}
+
+function displayEveryMarkerWithNumber(){
+  const shadowmarker = document.querySelectorAll(".global-static-map__container__shadow")
+  const dotmarker = document.querySelectorAll(".global-static-map__container__marker")
+  dotmarker.forEach(item => {
+    item.classList.remove("hide")
+  })
+  shadowmarker.forEach(item => {
+    item.classList.remove("selectedShad")
+  })
+}
+
+function displayMarkerShadow(){
+  const dotmarker = document.querySelectorAll(".global-static-map__container__shadow")
+  dotmarker.forEach(item => { 
+    item.style.display = 'block'
+  })
+}
+
+function hideInfoBox(){
+  const dotmarker = document.querySelectorAll(".global-static-map__container__dotmarker")
+  const shadowmarker = document.querySelectorAll(".global-static-map__container__shadow")
+  const infoboard = document.querySelectorAll(".global-static-map__container__feedbox")
+  dotmarker.forEach(item => {
+    item.classList.remove("hide")
+  })
+  shadowmarker.forEach(item => { 
+    item.style.display = 'none'
+  })
+  infoboard.forEach(item => { 
+    item.classList.add("hidefeedbox")
+  })
+}
+
+function hideInfoBoard(){
+  const infoboard = document.querySelectorAll(".global-static-map__container__feedbox")
+  infoboard.forEach(item => { 
+    item.classList.add("hidefeedbox")
+  })
+}
+
+function hideAllMarkers(){
+  const shadowmarker = document.querySelectorAll(".global-static-map__container__shadow")
+  const dotmarker = document.querySelectorAll(".global-static-map__container__marker")
+  shadowmarker.forEach(item => { 
+    item.style.display = 'none'
+  })
+  dotmarker.forEach(item => { 
+    item.classList.add("global-static-map__container__dotmarker")
+    item.classList.remove("global-static-map__container__marker")
+  })
+}
+
+function showHide(){
+  const dotmarker = document.querySelectorAll(".global-static-map__container__marker")
+  dotmarker.forEach(item => {
+    item.classList.remove("hide")
+  })
+}
+
+// document.getElementsByClassName("global-static-map__container__feedbox__closeBtn").addEventListener("click", function(){
+//   console.log('here')
+// });
+
+map.on('load', function (e) {
+  
+  const markers = document.querySelectorAll('.mapboxgl-marker');
+
+  document.addEventListener('click', function(e) {
+    
+    e.preventDefault(); // Cancel the native event
+    e.stopPropagation();// Don't bubble/capture the event any further
+
+   console.log(target)
+
+    const infoboard = document.querySelectorAll(".global-static-map__container__feedbox")
+    let zoom = map.getZoom();
+    let target = e.target;
+    let open = false
+
+    infoboard.forEach(item => { 
+      if(!item.classList.contains('hidefeedbox')){
+        open = true
+      }
+    })
+
+    
+    if (target.classList.contains('mapboxgl-canvas')) {
+      console.log('canvas')
+      if(zoom===3){
+        if(open){
+          hideInfoBox()
+          displayMarkerWithNumber()
+          showHide()
+        }else{
+          flyToTour(defaultCenter,defaultZoom); 
+          hideAllMarkers()
+          showGroupToolTip()
+          hideInfoBox()
+        }
+      }
+    }
+
+    
+
+  });
+
+});
+
+    </script>
+  </body>
+</html>
