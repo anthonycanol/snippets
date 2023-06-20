@@ -1,0 +1,44 @@
+import { encodeBase64 } from 'backend/base64Encode.jsw'
+import wixSecretsBackend from 'wix-secrets-backend';
+import { fetch } from 'wix-fetch';
+
+export async function sendSMS(to_number, message) {
+    // const sms_password = await wixSecretsBackend.getSecret('sms_password');
+    // const sms_password = await wixSecretsBackend.getSecret('sms_api_key');
+    // const sms_username = await wixSecretsBackend.getSecret('sms_username');
+    const sms_password = 'EAEBD41B-1FDE-0EFD-9228-DE138D7C61F4';
+    const sms_username = 'theodoretrentman@gmail.com';
+    
+    const token_base64 = await(encodeBase64(sms_username + ':' + sms_password))
+    console.log('token base 64: ',token_base64)
+
+    let headers = {
+        'Content-type': 'application/json',
+        'Authorization': 'Basic ' + token_base64
+    };
+
+    let raw = JSON.stringify({
+        "messages": [{
+            "body": message,
+            "to": to_number,
+            "from": "+18336699682"
+        }]
+    });
+    
+    var options = {
+        method: 'POST',
+        headers: headers,
+        body: raw,
+        redirect: 'follow'
+    };
+
+    let data
+    await fetch("https://rest.clicksend.com/v3/sms/send", options)
+        .then(response => response.json())
+        .then(result => {
+            data = result;
+        })
+        .catch(error => console.log('error', error));
+
+    return data
+}
