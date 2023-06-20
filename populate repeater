@@ -1,0 +1,7 @@
+let repeaterData = []
+await $w("#repeater1").forEachItem(async ($item, itemData, index) => {
+    let section = $item('#input8').value
+    let row = $item('#input9').value
+    let seat = $item('#input10').value
+    await repeaterData.push({'section':section,'row':row,'seatNumber':seat,'membersInfoId':memInfoId})
+});
