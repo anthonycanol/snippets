@@ -1,0 +1,107 @@
+  const toGetSellers = async () => {
+        console.log('seller')
+        mem = []
+        mem = await getSellerMembers()
+        console.log(mem)
+    };
+
+    const toGetbuyers = async () => {
+        console.log('buyer')
+        mem = []
+        mem = await getBuyerMembers()
+        console.log(mem)
+    };
+
+    const toGetInfo = async () => {
+        console.log('info')
+        console.log(mem)
+        if(mem.length>0){
+            for (const i of mem) {
+                let resInfo = await getMemberInfo(i)
+
+                if (resInfo !== false) {
+                    dataAll.push(resInfo)
+                }
+            }
+        }
+        console.log(dataAll)
+    };
+
+    const toGetInfoAll = async () => {
+        console.log('all info')
+
+        dataAll = await getMemberInfoAll()
+        console.log(dataAll)
+    };
+
+    const toGetTicket = async () => {
+        console.log('tickets')
+        for (let d of dataAll) {
+            let ticketInfo = await getMemberTickets(d._id)
+            if (ticketInfo.length > 0) {
+                d.tickets = ticketInfo
+            }
+        }
+        console.log(dataAll)
+        $w('#repeater1').data = dataAll
+    };
+
+    const toGetTicketAll = async () => {
+        console.log('all ticket')
+
+        for (let d of dataAll) {
+            let ticketInfo = await getMemberTickets(d._id)
+            if (ticketInfo.length > 0) {
+                d.tickets = ticketInfo
+            }
+        }
+        console.log(dataAll)
+        $w('#repeater1').data = dataAll
+    };
+
+    const toGetBadge = async () => {
+        console.log('badge')
+        for (let d of dataAll) {
+            if (d.usersId === undefined) {
+                d.badge = ''
+            } else {
+                let badge = await getMemberBadge(d.usersId)
+                if (badge === undefined) {
+                    d.badge = ''
+                } else {
+                    d.badge = badge
+                }
+            }
+        }
+    }
+
+    const toDisplayRepeater = () => {
+        if(dataAll.length>0){
+            $w('#textNoData').collapse()
+            $w('#repeater1').expand()
+            displayMembersBadge()
+        }else{
+            $w('#repeater1').collapse()
+            $w('#textNoData').expand()
+        }
+        
+        $w('#box8').hide()
+    }
+
+    // const tasks = [toGetSellers,toGetInfo,toGetTicket,toDisplayRepeater];
+    let tasks = []
+    if(memType==='Seller Approved'){
+        tasks = [toGetSellers, toGetInfo, toGetTicket, toGetBadge, toDisplayRepeater];
+    }else if(memType==='Buyer Approved'){
+        tasks = [toGetbuyers, toGetInfo,toGetBadge, toDisplayRepeater];
+    }else{
+        tasks = [toGetInfoAll, toGetTicketAll, toGetBadge, toDisplayRepeater];
+    }
+    
+    const callTasks = async () => {
+        for (const task of tasks) {
+            await task();
+        }
+    };
+
+    callTasks();
