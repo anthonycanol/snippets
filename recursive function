@@ -1,0 +1,129 @@
+import { getBlessings, shuffleArray, chunkArray } from 'backend/blessings.web'
+const _ = require("lodash");
+
+let blessing
+let sblessing
+let chunck
+let left
+let right
+let cleft
+let cright
+
+$w.onReady(function () {
+    $w('#audioPlayer3').play()
+
+    $w('#repeater1').data = []
+    $w('#repeater2').data = []
+
+    recursiveFunction()
+})
+
+async function recursiveFunction(){
+
+    console.log('start')
+
+    const callTasks = async () => {
+        console.log('callTasks')
+
+        const toGetBlessing = async () => {
+            blessing = await getBlessings()
+        };
+
+        const toPrepareData = async () => {
+            chunck = Math.round(blessing.length / 2)
+
+            await shuffleArray(blessing).then(function(resShuffle) {
+                console.log('resShuffle: ', resShuffle)
+                sblessing = resShuffle
+            })
+
+            await chunkArray(sblessing,chunck).then(function(resChunk) {
+                console.log('resChunk: ', resChunk)
+                left = resChunk[0]
+                right = resChunk[1]
+            })
+
+            await chunkArray(left,4).then(function(resChunk) {
+                console.log('resChunk: ', resChunk)
+                cleft = resChunk
+            })
+
+            await chunkArray(right,4).then(function(resChunk) {
+                console.log('resChunk: ', resChunk)
+                cright = resChunk
+            })
+
+            console.log('prepared blessing: ', blessing)
+            console.log('sblessing: ', sblessing)
+            console.log('left: ',left)
+            console.log('right: ',right)
+            console.log('chunck left: ',cleft)
+            console.log('chunk right: ',cright)
+            
+        }
+
+        const toAssignData = async () => {
+            console.log('cleft length: ',cleft.length)
+            for (let index = 0; index < cleft.length; index++) {
+                console.log('display')
+                $w('#repeater1').data = cleft[index]
+                $w('#repeater2').data = cright[index]
+
+                toDisplayData()
+                await new Promise(resolve => setTimeout(resolve, 20000)) .then(() => { console.log('20 seconds passed'); });
+            }
+        }
+
+        // let tasks = [toGetBlessing,toPrepareData,toAssignData,toDisplayData];
+        let tasks = [toGetBlessing,toPrepareData,toAssignData];
+        
+        for (const task of tasks) {
+            await task();
+        }
+
+        callTasks()
+    };
+
+    callTasks()
+}
+
+
+async function toDisplayData(){
+    $w('#repeater1').onItemReady(($i,itemData,index)=>{
+        let b = ''
+
+        if(itemData.message!==undefined){
+            b = itemData.message[1]!==undefined?itemData.message[1]:'&nbsp;' 
+            b += '<br/>' 
+            b += itemData.message[2]!==undefined?itemData.message[2]:'&nbsp;' 
+            b += '<br/>' 
+            b += itemData.message[3]!==undefined?itemData.message[3]:'&nbsp;' 
+            b += '<br/>' 
+            b += itemData.message[4]!==undefined?itemData.message[4]:'&nbsp;'
+        }else{
+            b = '&nbsp;' + '<br/>' + '&nbsp;' + '<br/>' + '&nbsp;' + '<br/>' + '&nbsp;'
+        }
+
+        $i('#text12').html = '<p class="wixui-rich-text__text" style="text-align: center; color: #fff;">' + b + '</p>'
+        $i('#text14').text = itemData.daysLeft.toString()
+    })
+
+    $w('#repeater2').onItemReady(($i,itemData,index)=>{
+        let b = ''
+
+        if(itemData.message!==undefined){
+            b = itemData.message[1]!==undefined?itemData.message[1]:'&nbsp;' 
+            b += '<br/>' 
+            b += itemData.message[2]!==undefined?itemData.message[2]:'&nbsp;' 
+            b += '<br/>' 
+            b += itemData.message[3]!==undefined?itemData.message[3]:'&nbsp;' 
+            b += '<br/>' 
+            b += itemData.message[4]!==undefined?itemData.message[4]:'&nbsp;'
+        }else{
+            b = '&nbsp;' + '<br/>' + '&nbsp;' + '<br/>' + '&nbsp;' + '<br/>' + '&nbsp;'
+        }
+
+        $i('#text13').html = '<p class="wixui-rich-text__text" style="text-align: center; color: #fff;">' + b + '</p>'
+        $i('#text15').text = itemData.daysLeft.toString()
+    })
+}
