@@ -1,0 +1,5 @@
+import wixLocationFrontend from 'wix-location-frontend';
+
+export async function goTo(data){
+    wixLocationFrontend.to(data);
+}
