@@ -1,0 +1,27 @@
+let result = await updateReferralCode(userId, generatedReferralCode)
+
+// backend code
+export const updateReferralCode = webMethod(
+    Permissions.Anyone,
+    async (id, data) => {
+        let member = {
+            contactDetails: {
+                customFields: {
+                    "custom.referral-code": {
+                        "name": "Referral Code",
+                        "value": data
+                    }
+                }
+            }
+        }
+
+        return await members
+            .updateMember(id, member)
+            .then((member) => {
+                return member;
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    }
+);
