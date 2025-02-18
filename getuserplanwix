@@ -1,0 +1,43 @@
+// frontend
+let res = await checkUserFromAllOrdersList(regres._id)
+
+// backend
+export const checkUserFromAllOrdersList = webMethod(
+    Permissions.Anyone,
+    async (data) => {
+        let ret
+        const ordersPerPage = 50;
+
+        let pageNumber = 0;
+        let currentOrdersPage = [];
+        let allOrders = [];
+
+        do {
+            let filters = {
+                buyerIds: [data],
+                orderStatuses: ['ACTIVE'],
+                paymentStatuses: ['PAID'],
+                planIds: ['2bcd4078-92b4-41d1-9f14-c6a865f92760']
+            }
+            let ordersToSkip = { skip: pageNumber * ordersPerPage };
+            try {
+                currentOrdersPage = await orders.listOrders(filters, null, ordersToSkip, options);
+            } catch (error) {
+                console.error(error);
+            }
+            allOrders = allOrders.concat(currentOrdersPage);
+            pageNumber++;
+        } while (currentOrdersPage.length != 0);
+        
+        if (allOrders.length > 0) {
+            for (const a of allOrders) {
+                if (a.buyer.memberId === data) {
+                    ret = true
+                }
+            }
+        }
+
+        return ret;
+
+    },
+);
