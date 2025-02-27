@@ -1,0 +1,74 @@
+// frontend
+async function saveMemberInfo() {
+    let dateValue = $w('#datePicker1').value
+    let age = calculateAge(dateValue)
+
+    let toSave = {
+        "firstName": $w('#input4').value,
+        "lastName": $w('#input3').value,
+        "email": $w('#input2').value,
+        "birthday": $w('#datePicker1').value,
+        "myAllergies": $w('#checkboxGroup1').value,
+        "others": $w('#input9').value,
+        "environmental": $w('#input8').value,
+        "age": age,
+        "state": $w('#dropdownState2').value,
+        "profilePhoto": imgUrl,
+        "city": $w('#dropdownCity1').value
+    }
+
+    await wixData.save("Import580", toSave)
+        .then(async (results) => {
+            await wixData
+                .query('Members/PrivateMembersData')
+                .eq('', results.email)
+                .find(options)
+                .then((mem) => {
+                    console.log('member: ', mem)
+                    let memberID = mem.items[0]._id
+
+                    if (imgUrl) {
+                        let url = imgUrl.split('/')[3]
+                        let memberPhoto = {
+                            'profile': {
+                                'nickname': $w('#input4').value + ' ' + $w('#input3').value,
+                                'profilePhoto': {
+                                    'url': url
+                                }
+                            }
+                        }
+                        myUpdateMemberFunction(memberID, memberPhoto)
+                    }
+                })
+        })
+}
+
+
+// backend
+import { members } from 'wix-members-backend';
+import { contacts } from "wix-crm-backend";
+
+let options = {
+    "suppressAuth": true,
+    "suppressHooks": true
+};
+
+
+export function myUpdateMemberFunction(id, member, memberPhoto) {
+    return members.updateMember(id, member)
+        .then((member) => {
+            console.log(member)
+            return member
+        })
+        .catch((error) => {
+            console.error(error)
+        })
+}
+
+export async function listCustomFieldKeys() {
+  const queryResults = await contacts.queryExtendedFields().find(options);
+  // Filters for custom fields (where fieldType is USER_DEFINED), then converts to an array of keys
+  return queryResults.items
+    .filter((field) => field.fieldType === "USER_DEFINED")
+    .map((field) => field.key);
+}
